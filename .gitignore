@@ -1,0 +1,53 @@
+# Build outputs
+*.apk
+*.aar
+*.aab
+*.dex
+*.class
+
+# Gradle
+.gradle/
+build/
+gradle/wrapper/gradle-wrapper.jar
+
+# Local config
+local.properties
+
+# IDE (Android Studio / IntelliJ)
+.idea/
+*.iml
+
+# Keystores (CRITICAL - never commit signing keys)
+*.jks
+*.keystore
+
+# Native code
+.externalNativeBuild
+.cxx/
+
+# Logs
+*.log
+
+# Android Studio
+.navigation/
+captures/
+
+# Lint
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+
+# Fastlane (when we add it later)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Profiling
+*.hprof
+
+# Documentation and notes
+# (README.md is tracked explicitly)
+*.md
+!README.md
