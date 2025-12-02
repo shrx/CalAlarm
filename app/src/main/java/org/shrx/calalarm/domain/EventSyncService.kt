@@ -4,6 +4,7 @@
 package org.shrx.calalarm.domain
 
 import android.content.Context
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -35,6 +36,7 @@ class EventSyncService(
 ) {
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val alarmResyncChannel: Channel<Unit> = Channel(Channel.CONFLATED)
+    private val monitoringStarted: AtomicBoolean = AtomicBoolean(false)
 
     private val calendarObserver: CalendarObserver = CalendarObserver(context) {
         alarmResyncChannel.trySend(Unit)
@@ -143,6 +145,9 @@ class EventSyncService(
      * Should be called once after permissions are granted. The initial call triggers the first sync.
      */
     fun startMonitoring() {
+        if (!monitoringStarted.compareAndSet(false, true)) {
+            return
+        }
         // Monitor calendar database changes
         calendarObserver.startObserving()
 

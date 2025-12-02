@@ -5,7 +5,6 @@ package org.shrx.calalarm
 
 import android.Manifest
 import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -16,7 +15,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,11 +25,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.shrx.calalarm.data.local.AlarmDao
-import org.shrx.calalarm.data.local.AppDatabase
 import org.shrx.calalarm.data.repository.CalendarRepository
-import org.shrx.calalarm.domain.EventSyncService
 import org.shrx.calalarm.data.repository.UserPreferencesRepository
-import org.shrx.calalarm.service.AlarmScheduler
+import org.shrx.calalarm.domain.EventSyncService
 import org.shrx.calalarm.ui.alarmlist.AlarmListScreen
 import org.shrx.calalarm.ui.alarmlist.AlarmListViewModel
 import org.shrx.calalarm.ui.info.InfoScreen
@@ -148,35 +144,22 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun MainAppContent() {
         val navController: NavHostController = rememberNavController()
+        val calAlarmApp: CalAlarmApplication = remember { application as CalAlarmApplication }
 
-        // Create dependencies and ViewModels (remember to prevent recreation on recomposition)
-        val alarmDao: AlarmDao = remember {
-            AppDatabase.getInstance().alarmDao()
-        }
-        val alarmScheduler: AlarmScheduler = remember {
-            AlarmScheduler(this)
-        }
-        val sharedPreferences: android.content.SharedPreferences = remember {
-            getSharedPreferences(UserPreferencesRepository.PREFERENCES_FILE_NAME, Context.MODE_PRIVATE)
-        }
-        val userPreferencesRepository: UserPreferencesRepository = remember {
-            UserPreferencesRepository(sharedPreferences)
-        }
-        val calendarRepository: CalendarRepository = remember {
-            CalendarRepository(this, sharedPreferences)
-        }
-        val eventSyncService: EventSyncService = remember {
-            EventSyncService(this, alarmDao, alarmScheduler, calendarRepository)
-        }
+        val alarmDao: AlarmDao = remember { calAlarmApp.alarmDao }
+        val userPreferencesRepository: UserPreferencesRepository = remember { calAlarmApp.userPreferencesRepository }
+        val calendarRepository: CalendarRepository = remember { calAlarmApp.calendarRepository }
+        val eventSyncService: EventSyncService = remember { calAlarmApp.eventSyncService }
+
         val alarmListViewModel: AlarmListViewModel = remember {
             AlarmListViewModel(alarmDao, eventSyncService, calendarRepository)
         }
         val settingsViewModel: SettingsViewModel = remember {
             SettingsViewModel(calendarRepository, userPreferencesRepository)
         }
-        // Start observing calendar database and selection changes
+        // Ensure background monitoring starts once permissions are granted
         LaunchedEffect(Unit) {
-            eventSyncService.startMonitoring()
+            calAlarmApp.ensureEventSyncMonitoring()
         }
 
         NavHost(
