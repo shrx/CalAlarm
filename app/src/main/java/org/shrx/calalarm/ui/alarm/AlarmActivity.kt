@@ -28,7 +28,6 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +53,6 @@ import org.shrx.calalarm.data.local.entities.ScheduledAlarm
 import org.shrx.calalarm.data.repository.UserPreferencesRepository
 import org.shrx.calalarm.service.EXTRA_EVENT_ID
 import org.shrx.calalarm.service.EXTRA_EVENT_TITLE
-import org.shrx.calalarm.ui.theme.CalAlarmTheme
 import org.shrx.calalarm.util.DateTimeFormatter
 
 /**
@@ -101,7 +99,7 @@ class AlarmActivity : ComponentActivity() {
         startVibration()
 
         setContent {
-            CalAlarmTheme {
+            AlarmActivityTheme {
                 AlarmScreenContent(
                     eventTitle = eventTitle,
                     onSnooze = { snoozeAlarm(eventId) },
@@ -245,7 +243,7 @@ fun AlarmScreenContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.error)
+            .background(AlarmTheme.colors.background)
     ) {
         Column(
             modifier = Modifier
@@ -266,8 +264,7 @@ fun AlarmScreenContent(
 
             Text(
                 text = currentTime,
-                style = MaterialTheme.typography.displayLarge,
-                color = Color.White,
+                color = AlarmTheme.colors.onBackground,
                 fontSize = 72.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -278,7 +275,7 @@ fun AlarmScreenContent(
             Icon(
                 imageVector = Icons.Default.Notifications,
                 contentDescription = null,
-                tint = Color.White,
+                tint = AlarmTheme.colors.onBackground,
                 modifier = Modifier.size(64.dp)
             )
 
@@ -287,8 +284,9 @@ fun AlarmScreenContent(
             // Event title
             Text(
                 text = eventTitle,
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
+                color = AlarmTheme.colors.onBackground,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.Center,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
@@ -303,13 +301,13 @@ fun AlarmScreenContent(
                     .fillMaxWidth()
                     .height(72.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White.copy(alpha = 0.9f),
-                    contentColor = MaterialTheme.colorScheme.error
+                    containerColor = AlarmTheme.colors.buttonSecondary,
+                    contentColor = AlarmTheme.colors.onButton
                 )
             ) {
                 Text(
                     text = "SNOOZE",
-                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -323,13 +321,13 @@ fun AlarmScreenContent(
                     .fillMaxWidth()
                     .height(72.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = MaterialTheme.colorScheme.error
+                    containerColor = AlarmTheme.colors.buttonPrimary,
+                    contentColor = AlarmTheme.colors.onButton
                 )
             ) {
                 Text(
                     text = "DISMISS",
-                    style = MaterialTheme.typography.titleLarge,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
