@@ -3,6 +3,7 @@
 
 package org.shrx.calalarm.ui.permissions
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,9 @@ fun PermissionRequiredScreen(
     onButtonClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -47,11 +50,13 @@ fun PermissionRequiredScreen(
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 text = description,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
             Button(
                 onClick = onButtonClick,
