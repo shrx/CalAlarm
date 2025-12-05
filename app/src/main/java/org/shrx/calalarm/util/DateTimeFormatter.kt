@@ -3,9 +3,10 @@
 
 package org.shrx.calalarm.util
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Utility object for formatting dates and times consistently across the app.
@@ -13,6 +14,9 @@ import java.util.Locale
  * Provides standard formatting functions for displaying timestamps to users.
  */
 object DateTimeFormatter {
+    private val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    private val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
     /**
      * Formats a Unix timestamp into a readable date and time string.
      *
@@ -20,8 +24,9 @@ object DateTimeFormatter {
      * @return Formatted string in ISO format (e.g., "2025-01-15 14:30")
      */
     fun formatDateTime(timestamp: Long): String {
-        val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-        return dateFormat.format(Date(timestamp))
+        val zonedDateTime: ZonedDateTime = Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+        return dateTimeFormatter.format(zonedDateTime)
     }
 
     /**
@@ -31,8 +36,9 @@ object DateTimeFormatter {
      * @return Formatted time string (e.g., "14:30")
      */
     fun formatTime(timestamp: Long): String {
-        val dateFormat: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return dateFormat.format(Date(timestamp))
+        val zonedDateTime: ZonedDateTime = Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+        return timeFormatter.format(zonedDateTime)
     }
 
     /**
@@ -41,7 +47,7 @@ object DateTimeFormatter {
      * @return Current time string (e.g., "14:30")
      */
     fun getCurrentTime(): String {
-        val dateFormat: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        return dateFormat.format(Date())
+        val zonedDateTime: ZonedDateTime = ZonedDateTime.now()
+        return timeFormatter.format(zonedDateTime)
     }
 }
