@@ -113,20 +113,33 @@ class AlarmActivity : ComponentActivity() {
 
     /**
      * Starts playing the system default alarm sound in a loop.
+     * Falls back to ringtone if alarm sound is unavailable.
+     * If no sound is available or playback fails, continues with vibration only.
      */
     private fun startAlarmSound() {
-        val alarmUri: android.net.Uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        mediaPlayer = MediaPlayer().apply {
-            setDataSource(this@AlarmActivity, alarmUri)
-            isLooping = true
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ALARM)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-            )
-            prepare()
-            start()
+        val alarmUri: android.net.Uri? = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+
+        if (alarmUri == null) {
+            android.util.Log.w("AlarmActivity", "No alarm sound available, using vibration only")
+            return
+        }
+
+        try {
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(this@AlarmActivity, alarmUri)
+                isLooping = true
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_ALARM)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+                prepare()
+                start()
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AlarmActivity", "Failed to play alarm sound, using vibration only", e)
         }
     }
 
