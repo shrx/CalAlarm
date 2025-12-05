@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.shrx.calalarm.MainActivity
 import org.shrx.calalarm.data.local.AppDatabase
 import org.shrx.calalarm.ui.alarm.AlarmActivity
 
@@ -55,6 +56,15 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Create PendingIntent for content intent (opens main activity when notification is tapped)
+        val mainActivityIntent: Intent = Intent(context, MainActivity::class.java)
+        val mainActivityPendingIntent: PendingIntent = PendingIntent.getActivity(
+            context,
+            eventId.toInt(),
+            mainActivityIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notificationManager: NotificationManager = context.getSystemService(NotificationManager::class.java)
         // Hide the passive status notification while the ringing alarm is active.
         notificationManager.cancel(NEXT_ALARM_NOTIFICATION_ID)
@@ -73,7 +83,7 @@ class AlarmReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(alarmActivityPendingIntent, true)
-            .setContentIntent(alarmActivityPendingIntent)
+            .setContentIntent(mainActivityPendingIntent)
             .setAutoCancel(false)
             .setWhen(System.currentTimeMillis())
             .build()
