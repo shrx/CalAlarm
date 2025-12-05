@@ -286,7 +286,7 @@ fun AlarmScreenContent(
             // Alarm icon
             Icon(
                 imageVector = Icons.Default.Notifications,
-                contentDescription = null,
+                contentDescription = "Alarm",
                 tint = AlarmTheme.colors.onBackground,
                 modifier = Modifier.size(64.dp)
             )

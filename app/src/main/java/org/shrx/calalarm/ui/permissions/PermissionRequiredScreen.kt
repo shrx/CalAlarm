@@ -43,7 +43,7 @@ fun PermissionRequiredScreen(
         ) {
             Icon(
                 imageVector = Icons.Default.Warning,
-                contentDescription = null,
+                contentDescription = "Warning",
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.error
             )
