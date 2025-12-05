@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -53,6 +54,7 @@ import org.shrx.calalarm.data.local.entities.ScheduledAlarm
 import org.shrx.calalarm.data.repository.UserPreferencesRepository
 import org.shrx.calalarm.service.EXTRA_EVENT_ID
 import org.shrx.calalarm.service.EXTRA_EVENT_TITLE
+import org.shrx.calalarm.ui.effects.WaterEffect
 import org.shrx.calalarm.util.DateTimeFormatter
 
 /**
@@ -240,11 +242,11 @@ fun AlarmScreenContent(
     onSnooze: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AlarmTheme.colors.background)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Animated water background
+        WaterEffect()
+
+        // Content on top of water
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -300,6 +302,7 @@ fun AlarmScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AlarmTheme.colors.buttonSecondary,
                     contentColor = AlarmTheme.colors.onButton
@@ -320,6 +323,7 @@ fun AlarmScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = AlarmTheme.colors.buttonPrimary,
                     contentColor = AlarmTheme.colors.onButton
