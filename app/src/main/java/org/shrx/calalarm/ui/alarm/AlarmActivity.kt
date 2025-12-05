@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -85,6 +86,11 @@ class AlarmActivity : ComponentActivity() {
         setTurnScreenOn(true)
         val keyguardManager: KeyguardManager = getSystemService(KeyguardManager::class.java)
         keyguardManager.requestDismissKeyguard(this, null)
+
+        // Prevent dismissing with back button
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {}
+        })
 
         // Extract intent data
         val eventId: Long = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
@@ -226,15 +232,6 @@ class AlarmActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopSoundAndVibration()
-    }
-
-    /**
-     * Prevents dismissing with back button - user must press DISMISS.
-     */
-    @Deprecated("Deprecated in Java")
-    @Suppress("MissingSuperCall")
-    override fun onBackPressed() {
-        // Do nothing - user must press DISMISS button
     }
 }
 
