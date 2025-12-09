@@ -11,15 +11,17 @@ import kotlin.math.max
 
 data class UserPreferences(
     val snoozeDelayMinutes: Long,
-    val showNextAlarmNotification: Boolean
+    val showNextAlarmNotification: Boolean,
+    val syncIntervalMinutes: Long
 )
 
 /**
  * Repository exposing user-configurable settings stored in SharedPreferences.
  *
- * Currently supports two settings:
+ * Currently supports three settings:
  * - Snooze delay length in minutes (must be >= 1 minute)
  * - Whether to show a persistent notification for the next upcoming alarm
+ * - Periodic sync interval in minutes (must be >= 15 minutes per WorkManager constraint)
  */
 class UserPreferencesRepository(
     private val sharedPreferences: SharedPreferences
@@ -29,7 +31,9 @@ class UserPreferencesRepository(
         const val PREFERENCES_FILE_NAME: String = "calalarm_prefs"
         private const val KEY_SNOOZE_DELAY_MINUTES: String = "snooze_delay_minutes"
         private const val KEY_SHOW_NEXT_ALARM_NOTIFICATION: String = "show_next_alarm_notification"
+        private const val KEY_SYNC_INTERVAL_MINUTES: String = "sync_interval_minutes"
         private const val DEFAULT_SNOOZE_MINUTES: Long = 10L
+        private const val DEFAULT_SYNC_INTERVAL_MINUTES: Long = 15L
     }
 
     /**
@@ -40,7 +44,7 @@ class UserPreferencesRepository(
 
         val listener: SharedPreferences.OnSharedPreferenceChangeListener =
             SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-                if (key == KEY_SNOOZE_DELAY_MINUTES || key == KEY_SHOW_NEXT_ALARM_NOTIFICATION) {
+                if (key == KEY_SNOOZE_DELAY_MINUTES || key == KEY_SHOW_NEXT_ALARM_NOTIFICATION || key == KEY_SYNC_INTERVAL_MINUTES) {
                     trySend(readPreferences())
                 }
             }
@@ -55,7 +59,8 @@ class UserPreferencesRepository(
     fun readPreferences(): UserPreferences {
         return UserPreferences(
             snoozeDelayMinutes = getSnoozeDelayMinutes(),
-            showNextAlarmNotification = isNextAlarmNotificationEnabled()
+            showNextAlarmNotification = isNextAlarmNotificationEnabled(),
+            syncIntervalMinutes = getSyncIntervalMinutes()
         )
     }
 
@@ -78,6 +83,26 @@ class UserPreferencesRepository(
     fun setNextAlarmNotificationEnabled(enabled: Boolean) {
         sharedPreferences.edit()
             .putBoolean(KEY_SHOW_NEXT_ALARM_NOTIFICATION, enabled)
+            .apply()
+    }
+
+    /**
+     * Gets the sync interval in minutes for periodic background sync.
+     * Minimum 15 minutes enforced by WorkManager platform constraint.
+     */
+    fun getSyncIntervalMinutes(): Long {
+        val storedValue: Long = sharedPreferences.getLong(KEY_SYNC_INTERVAL_MINUTES, DEFAULT_SYNC_INTERVAL_MINUTES)
+        return max(15L, storedValue)
+    }
+
+    /**
+     * Sets the sync interval in minutes for periodic background sync.
+     * Minimum 15 minutes enforced by WorkManager platform constraint.
+     */
+    fun setSyncIntervalMinutes(minutes: Long) {
+        val sanitized: Long = max(15L, minutes)
+        sharedPreferences.edit()
+            .putLong(KEY_SYNC_INTERVAL_MINUTES, sanitized)
             .apply()
     }
 }

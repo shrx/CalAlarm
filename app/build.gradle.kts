@@ -13,8 +13,8 @@ android {
         applicationId = "org.shrx.calalarm"
         minSdk = 34
         targetSdk = 35
-        versionCode = 46
-        versionName = "0.8.9"
+        versionCode = 47
+        versionName = "0.9.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -79,6 +79,9 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

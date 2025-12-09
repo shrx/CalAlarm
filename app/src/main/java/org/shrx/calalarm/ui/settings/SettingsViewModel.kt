@@ -45,6 +45,13 @@ class SettingsViewModel(
     private val _snoozeDelayError: MutableStateFlow<String?> = MutableStateFlow(null)
     val snoozeDelayError: StateFlow<String?> = _snoozeDelayError
 
+    private val _syncIntervalInput: MutableStateFlow<String> =
+        MutableStateFlow(_userPreferences.value.syncIntervalMinutes.toString())
+    val syncIntervalInput: StateFlow<String> = _syncIntervalInput
+
+    private val _syncIntervalError: MutableStateFlow<String?> = MutableStateFlow(null)
+    val syncIntervalError: StateFlow<String?> = _syncIntervalError
+
     init {
         android.util.Log.d("SettingsViewModel", "ViewModel created: ${this.hashCode()}")
         viewModelScope.launch {
@@ -56,6 +63,7 @@ class SettingsViewModel(
             userPreferencesRepository.preferencesFlow.collect { prefs ->
                 _userPreferences.value = prefs
                 _snoozeDelayInput.value = prefs.snoozeDelayMinutes.toString()
+                _syncIntervalInput.value = prefs.syncIntervalMinutes.toString()
             }
         }
     }
@@ -102,5 +110,19 @@ class SettingsViewModel(
 
     fun setNextAlarmNotificationEnabled(enabled: Boolean) {
         userPreferencesRepository.setNextAlarmNotificationEnabled(enabled)
+    }
+
+    fun onSyncIntervalInputChange(input: String) {
+        val sanitized: String = input.filter { it.isDigit() }
+        _syncIntervalInput.value = sanitized
+        val minutes: Long? = sanitized.toLongOrNull()
+        if (minutes == null || minutes < 15) {
+            _syncIntervalError.value = "Enter at least 15 minutes"
+            return
+        }
+        _syncIntervalError.value = null
+        if (minutes != _userPreferences.value.syncIntervalMinutes) {
+            userPreferencesRepository.setSyncIntervalMinutes(minutes)
+        }
     }
 }

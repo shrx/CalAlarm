@@ -178,4 +178,12 @@ class EventSyncService(
             }
         }
     }
+
+    /**
+     * Requests a sync to be performed.
+     * Can be called from anywhere to trigger a calendar sync.
+     */
+    fun requestSync() {
+        alarmResyncChannel.trySend(Unit)
+    }
 }

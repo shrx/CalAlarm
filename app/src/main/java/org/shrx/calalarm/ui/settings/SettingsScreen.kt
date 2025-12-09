@@ -59,6 +59,8 @@ fun SettingsScreen(
     val preferences: UserPreferences by viewModel.userPreferences.collectAsState()
     val snoozeInput: String by viewModel.snoozeDelayInput.collectAsState()
     val snoozeError: String? by viewModel.snoozeDelayError.collectAsState()
+    val syncIntervalInput: String by viewModel.syncIntervalInput.collectAsState()
+    val syncIntervalError: String? by viewModel.syncIntervalError.collectAsState()
 
     Scaffold(
         topBar = {
@@ -85,6 +87,16 @@ fun SettingsScreen(
                     value = snoozeInput,
                     errorMessage = snoozeError,
                     onValueChange = viewModel::onSnoozeDelayInputChange
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            item {
+                SyncIntervalSetting(
+                    value = syncIntervalInput,
+                    errorMessage = syncIntervalError,
+                    onValueChange = viewModel::onSyncIntervalInputChange
                 )
             }
             item {
@@ -151,6 +163,51 @@ private fun SnoozeDelaySetting(
         )
         Text(
             text = "Minutes to delay alarms after tapping Snooze.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text("Minutes") },
+            singleLine = true,
+            isError = errorMessage != null,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            suffix = { Text("min") }
+        )
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun SyncIntervalSetting(
+    value: String,
+    errorMessage: String?,
+    onValueChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = "Background sync interval",
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = "How often to check for new calendar events when the application is not running.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
