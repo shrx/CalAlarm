@@ -25,7 +25,9 @@ class SyncWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         return@withContext try {
             val application: CalAlarmApplication = applicationContext as CalAlarmApplication
-            application.eventSyncService.requestSync()
+            // Call syncAndScheduleAlarms() directly to ensure sync runs even when
+            // the monitoring consumer isn't ready (e.g., cold process start)
+            application.eventSyncService.syncAndScheduleAlarms()
             Result.success()
         } catch (e: Exception) {
             android.util.Log.e("SyncWorker", "Sync failed", e)
