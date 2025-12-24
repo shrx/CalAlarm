@@ -9,8 +9,10 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.os.Bundle
+import android.os.UserManager
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -81,11 +83,18 @@ class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Show over lock screen
+        // Show over lock screen and keep screen on
         setShowWhenLocked(true)
         setTurnScreenOn(true)
-        val keyguardManager: KeyguardManager = getSystemService(KeyguardManager::class.java)
-        keyguardManager.requestDismissKeyguard(this, null)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        // Only try to dismiss keyguard if device has been unlocked since boot
+        // (requestDismissKeyguard fails in direct boot mode)
+        val userManager: UserManager = getSystemService(UserManager::class.java)
+        if (userManager.isUserUnlocked) {
+            val keyguardManager: KeyguardManager = getSystemService(KeyguardManager::class.java)
+            keyguardManager.requestDismissKeyguard(this, null)
+        }
 
         // Prevent dismissing with back button
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
