@@ -81,22 +81,32 @@ fun WaterEffect(modifier: Modifier = Modifier) {
             offset = 0f
         )
 
-        // Layer 2: Radial caustics - circular patterns
+        // Layer 2: Radial caustics - circular patterns with bright ring
         drawRadialCaustics(
             colors = listOf(
-                turquoise.copy(alpha = 0.8f),
+                Color.Transparent,
+                turquoise.copy(alpha = 0.1f),
+                turquoise.copy(alpha = 0.3f),
                 brightCyan.copy(alpha = 0.6f),
+                brightCyan.copy(alpha = 0.7f),
+                turquoise.copy(alpha = 0.4f),
+                turquoise.copy(alpha = 0.2f),
                 Color.Transparent
             ),
             progress = wave2,
             offset = 0.3f
         )
 
-        // Layer 3: Light radial caustics - brighter highlights
+        // Layer 3: Light radial caustics - brighter highlight rings
         drawRadialCaustics(
             colors = listOf(
-                brightCyan.copy(alpha = 0.7f),
+                Color.Transparent,
+                brightCyan.copy(alpha = 0.1f),
+                brightCyan.copy(alpha = 0.3f),
                 lightCyan.copy(alpha = 0.5f),
+                lightCyan.copy(alpha = 0.6f),
+                brightCyan.copy(alpha = 0.3f),
+                brightCyan.copy(alpha = 0.15f),
                 Color.Transparent
             ),
             progress = wave3,
