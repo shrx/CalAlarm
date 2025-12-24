@@ -21,13 +21,13 @@ data class AlarmColors(
 
 private val LocalAlarmColors = compositionLocalOf {
     val goldenYellow = Color(0xFFFFD700)
-    val softGold = Color(0xFFFFE066) // Slightly less saturated for snooze button
+    val orangeYellow = Color(0xFFFFA500) // More orange for snooze button
     AlarmColors(
         background = Color(0xFF006B6B), // Deep teal (water base color)
         onBackground = goldenYellow,
         buttonPrimary = goldenYellow, // Dismiss button - golden yellow
-        buttonSecondary = softGold, // Snooze button - less saturated
-        onButton = Color(0xFF003366) // Dark navy blue for button text
+        buttonSecondary = orangeYellow, // Snooze button - orange-yellow
+        onButton = Color(0xFF5C4033) // Chocolate brown for button text
     )
 }
 
@@ -38,14 +38,14 @@ private val LocalAlarmColors = compositionLocalOf {
 @Composable
 fun AlarmActivityTheme(content: @Composable () -> Unit) {
     val goldenYellow = Color(0xFFFFD700)
-    val softGold = Color(0xFFFFE066) // Slightly less saturated for snooze button
+    val orangeYellow = Color(0xFFFFA500) // More orange for snooze button
 
     val colors: AlarmColors = AlarmColors(
         background = Color(0xFF006B6B), // Deep teal (water base color)
         onBackground = goldenYellow,
         buttonPrimary = goldenYellow, // Dismiss button - golden yellow
-        buttonSecondary = softGold, // Snooze button - less saturated
-        onButton = Color(0xFF003366) // Dark navy blue for button text
+        buttonSecondary = orangeYellow, // Snooze button - orange-yellow
+        onButton = Color(0xFF5C4033) // Chocolate brown for button text
     )
 
     CompositionLocalProvider(LocalAlarmColors provides colors) {

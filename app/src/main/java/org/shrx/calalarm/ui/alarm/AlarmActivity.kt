@@ -329,7 +329,7 @@ fun AlarmScreenContent(
             ) {
                 Text(
                     text = "SNOOZE",
-                    fontSize = 22.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -350,7 +350,7 @@ fun AlarmScreenContent(
             ) {
                 Text(
                     text = "DISMISS",
-                    fontSize = 22.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
