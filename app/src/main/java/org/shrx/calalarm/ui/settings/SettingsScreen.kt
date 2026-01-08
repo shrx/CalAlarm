@@ -3,6 +3,10 @@
 
 package org.shrx.calalarm.ui.settings
 
+import android.content.Intent
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,12 +33,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import org.shrx.calalarm.data.calendar.models.CalendarInfo
 import org.shrx.calalarm.data.repository.UserPreferences
 
@@ -98,6 +108,12 @@ fun SettingsScreen(
                     errorMessage = syncIntervalError,
                     onValueChange = viewModel::onSyncIntervalInputChange
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+            item {
+                BatteryOptimizationSetting()
             }
             item {
                 Spacer(modifier = Modifier.height(12.dp))
@@ -328,6 +344,68 @@ private fun CalendarListHeader() {
             text = "Choose which calendars CalAlarm should monitor.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun BatteryOptimizationSetting() {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val powerManager: PowerManager = remember {
+        context.getSystemService(PowerManager::class.java)
+    }
+
+    var isExempt: Boolean by remember {
+        mutableStateOf(powerManager.isIgnoringBatteryOptimizations(context.packageName))
+    }
+
+    // Refresh state when returning from system settings
+    androidx.compose.runtime.DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isExempt = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp)
+        ) {
+            Text(
+                text = "Unrestricted battery usage",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "Allow background sync to run even when battery saver is active.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Switch(
+            checked = isExempt,
+            onCheckedChange = {
+                val intent: Intent = if (isExempt) {
+                    Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                } else {
+                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:${context.packageName}")
+                    }
+                }
+                context.startActivity(intent)
+            }
         )
     }
 }
