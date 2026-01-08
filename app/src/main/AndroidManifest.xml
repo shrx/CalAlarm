@@ -21,6 +21,9 @@
     <!-- Restore alarms after reboot - Auto-granted -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Battery optimization exemption - Required for reliable background sync -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <application
         android:name=".CalAlarmApplication"
         android:allowBackup="true"

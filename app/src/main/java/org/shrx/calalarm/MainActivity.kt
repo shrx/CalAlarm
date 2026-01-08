@@ -7,7 +7,9 @@ import android.Manifest
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -87,10 +89,12 @@ class MainActivity : ComponentActivity() {
 
     private fun updatePermissionState() {
         val notificationManager: NotificationManager = getSystemService(NotificationManager::class.java)
+        val powerManager: PowerManager = getSystemService(PowerManager::class.java)
         val newState: PermissionState = PermissionState(
             hasPostNotifications = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED,
             hasCalendar = checkSelfPermission(Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED,
-            hasFullScreenIntent = notificationManager.canUseFullScreenIntent()
+            hasFullScreenIntent = notificationManager.canUseFullScreenIntent(),
+            hasBatteryOptimizationExemption = powerManager.isIgnoringBatteryOptimizations(packageName)
         )
         permissionStateFlow.value = newState
     }
@@ -131,6 +135,19 @@ class MainActivity : ComponentActivity() {
                     buttonText = "Open Settings",
                     onButtonClick = {
                         val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                        startActivity(intent)
+                    }
+                )
+            }
+            !permissionState.hasBatteryOptimizationExemption -> {
+                PermissionRequiredScreen(
+                    title = "Battery Optimization Exemption Required",
+                    description = "CalAlarm needs to be exempt from battery optimization to reliably sync calendar events in the background. Without this, alarms may not be scheduled when the phone is in battery saver mode.",
+                    buttonText = "Disable Battery Optimization",
+                    onButtonClick = {
+                        val intent: Intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
                         startActivity(intent)
                     }
                 )
@@ -194,6 +211,7 @@ class MainActivity : ComponentActivity() {
     private data class PermissionState(
         val hasPostNotifications: Boolean = false,
         val hasCalendar: Boolean = false,
-        val hasFullScreenIntent: Boolean = false
+        val hasFullScreenIntent: Boolean = false,
+        val hasBatteryOptimizationExemption: Boolean = false
     )
 }
