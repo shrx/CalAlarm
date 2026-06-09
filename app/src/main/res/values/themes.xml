@@ -2,6 +2,10 @@
 <resources>
     <style name="Theme.CalAlarm" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowAnimationStyle">@style/AnimationCalAlarmNone</item>
+        <!-- Don't paint a starting/preview window: the OS would fill it with
+             windowBackground (white) before Compose renders its first frame,
+             causing a white flash on activity transitions. -->
+        <item name="android:windowDisablePreview">true</item>
     </style>
 
     <style name="AnimationCalAlarmNone">
