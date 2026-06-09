@@ -3,13 +3,11 @@
 
 package org.shrx.calalarm.ui.alarm
 
-import android.app.KeyguardManager
 import android.app.NotificationManager
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.os.Bundle
-import android.os.UserManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.WindowManager
@@ -83,18 +81,13 @@ class AlarmActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Show over lock screen and keep screen on
+        // Show over lock screen and keep screen on.
+        // Do NOT request keyguard dismissal: on a secure keyguard that would
+        // launch the credential-entry UI (PIN/pattern) on top of the alarm.
+        // setShowWhenLocked already lets the user snooze/dismiss without unlocking.
         setShowWhenLocked(true)
         setTurnScreenOn(true)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
-        // Only try to dismiss keyguard if device has been unlocked since boot
-        // (requestDismissKeyguard fails in direct boot mode)
-        val userManager: UserManager = getSystemService(UserManager::class.java)
-        if (userManager.isUserUnlocked) {
-            val keyguardManager: KeyguardManager = getSystemService(KeyguardManager::class.java)
-            keyguardManager.requestDismissKeyguard(this, null)
-        }
 
         // Prevent dismissing with back button
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {

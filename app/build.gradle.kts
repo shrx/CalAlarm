@@ -13,8 +13,8 @@ android {
         applicationId = "org.shrx.calalarm"
         minSdk = 34
         targetSdk = 35
-        versionCode = 54
-        versionName = "0.9.7"
+        versionCode = 55
+        versionName = "0.9.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
