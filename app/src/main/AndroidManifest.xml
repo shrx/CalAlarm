@@ -46,12 +46,17 @@
         </activity>
 
         <!-- Full-screen Alarm Activity -->
+        <!-- taskAffinity="": keep the alarm in its own task so it never drags
+             MainActivity's task to the front behind the keyguard. MainActivity
+             can't draw or be snapshotted there, forcing the system to show a
+             theme-colored splash starting window on unlock (white flash). -->
         <activity
             android:name=".ui.alarm.AlarmActivity"
             android:exported="false"
             android:excludeFromRecents="true"
             android:launchMode="singleTop"
             android:showWhenLocked="true"
+            android:taskAffinity=""
             android:turnScreenOn="true" />
 
         <!-- Alarm Receiver -->
