@@ -214,9 +214,8 @@ class AlarmActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             alarmDao.deleteAlarm(eventId)
+            finish()
         }
-
-        finish()
     }
 
     /**
