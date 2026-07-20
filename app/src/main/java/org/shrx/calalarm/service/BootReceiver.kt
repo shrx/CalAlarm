@@ -13,19 +13,21 @@ import org.shrx.calalarm.data.local.AppDatabase
 import org.shrx.calalarm.data.local.entities.ScheduledAlarm
 
 /**
- * BroadcastReceiver that handles device boot completion.
+ * BroadcastReceiver that handles device boot completion and app updates.
  *
  * This receiver will:
- * - Receive BOOT_COMPLETED broadcast
+ * - Receive BOOT_COMPLETED / MY_PACKAGE_REPLACED broadcasts
  * - Restore all scheduled alarms from database
  * - Reschedule alarms with AlarmManager
  *
- * Note: AlarmManager alarms are cleared on device reboot,
- * so we must reschedule them.
+ * Note: AlarmManager alarms are cleared on device reboot and can be
+ * lost on app update, so we must reschedule them.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == Intent.ACTION_MY_PACKAGE_REPLACED
+        ) {
             // Use goAsync() since we need to do async database operations
             val pendingResult: PendingResult = goAsync()
 
