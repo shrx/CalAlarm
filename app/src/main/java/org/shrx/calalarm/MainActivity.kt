@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
             !permissionState.hasFullScreenIntent -> {
                 PermissionRequiredScreen(
                     title = "Full-Screen Alarm Permission Required",
-                    description = "CalAlarm needs permission to show alarms over the lock screen. Please enable 'Display over other apps' in Settings.",
+                    description = "CalAlarm needs permission to show alarms over the lock screen. Please allow full-screen notifications in Settings.",
                     buttonText = "Open Settings",
                     onButtonClick = {
                         val intent: Intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
