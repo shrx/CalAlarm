@@ -32,10 +32,16 @@ class AlarmReceiver : BroadcastReceiver() {
 
         // Validate that the event still exists in the calendar
         if (!checkEventExists(context, eventId)) {
-            // Event was deleted - clean up alarm from database
+            // Event was deleted - clean up alarm from database.
+            // goAsync() keeps the process alive until the delete completes.
+            val pendingResult: PendingResult = goAsync()
             val database: AppDatabase = AppDatabase.getInstance()
             CoroutineScope(Dispatchers.IO).launch {
-                database.alarmDao().deleteAlarm(eventId)
+                try {
+                    database.alarmDao().deleteAlarm(eventId)
+                } finally {
+                    pendingResult.finish()
+                }
             }
             return
         }
