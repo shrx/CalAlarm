@@ -5,9 +5,9 @@ package org.shrx.calalarm.domain
 
 import android.content.Context
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -139,8 +139,10 @@ class EventSyncService(
      * - Calendar selection (user enables/disables calendars in settings)
      *
      * When either source changes, a sync is triggered. If multiple changes occur rapidly,
-     * only the most recent triggers a sync. If a sync is running when a new change occurs,
-     * it is cancelled and restarted with fresh data.
+     * only the most recent triggers a sync (conflated channel). A running sync is never
+     * cancelled: interrupting between the DB insert and AlarmManager scheduling would
+     * strand an alarm that never fires. A pending request simply runs the sync again
+     * with fresh data once the current one finishes.
      *
      * Should be called once after permissions are granted. The initial call triggers the first sync.
      */
@@ -160,20 +162,16 @@ class EventSyncService(
                 }
         }
 
-        // Single consumer coroutine that processes sync requests serially
+        // Single consumer coroutine that processes sync requests serially,
+        // letting each sync run to completion
         coroutineScope.launch {
-            var currentSyncJob: Job? = null
             for (request in alarmResyncChannel) {
-                // Cancel previous sync if still running
-                currentSyncJob?.cancel()
-
-                // Start new sync
-                currentSyncJob = launch {
-                    try {
-                        syncAndScheduleAlarms()
-                    } catch (e: Exception) {
-                        android.util.Log.e("EventSyncService", "Sync failed", e)
-                    }
+                try {
+                    syncAndScheduleAlarms()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.e("EventSyncService", "Sync failed", e)
                 }
             }
         }

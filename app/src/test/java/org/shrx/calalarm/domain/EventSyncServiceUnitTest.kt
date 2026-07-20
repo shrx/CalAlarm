@@ -614,10 +614,9 @@ class EventSyncServiceUnitTest {
     }
 
     /**
-     * Verifies that cancel-previous pattern works: multiple rapid syncs, only last completes.
-     *
-     * Simulates the CalendarObserver callback behavior by manually implementing the
-     * cancel-previous pattern: each new sync cancels the previous Job before starting.
+     * Verifies that syncAndScheduleAlarms() is safe to cancel from the outside:
+     * cancelled runs perform no partial scheduling, only the completed run does.
+     * (The monitoring consumer itself never cancels a running sync.)
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
