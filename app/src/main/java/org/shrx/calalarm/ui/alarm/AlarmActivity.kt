@@ -4,6 +4,7 @@
 package org.shrx.calalarm.ui.alarm
 
 import android.app.NotificationManager
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
@@ -33,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -78,6 +80,11 @@ class AlarmActivity : ComponentActivity() {
     private lateinit var alarmDao: AlarmDao
     private lateinit var userPreferencesRepository: UserPreferencesRepository
 
+    // Currently displayed alarm. Mutable state so onNewIntent (a second alarm firing
+    // while one is showing) can switch the UI to the newest alarm.
+    private var displayedEventId: Long = 0L
+    private val displayedEventTitle: MutableState<String> = mutableStateOf("")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -95,8 +102,8 @@ class AlarmActivity : ComponentActivity() {
         })
 
         // Extract intent data
-        val eventId: Long = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
-        val eventTitle: String = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
+        displayedEventId = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
+        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
 
         // Initialize DAO
         alarmDao = AppDatabase.getInstance().alarmDao()
@@ -111,12 +118,24 @@ class AlarmActivity : ComponentActivity() {
         setContent {
             AlarmActivityTheme {
                 AlarmScreenContent(
-                    eventTitle = eventTitle,
-                    onSnooze = { snoozeAlarm(eventId) },
-                    onDismiss = { dismissAlarm(eventId) }
+                    eventTitle = displayedEventTitle.value,
+                    onSnooze = { snoozeAlarm(displayedEventId) },
+                    onDismiss = { dismissAlarm(displayedEventId) }
                 )
             }
         }
+    }
+
+    /**
+     * A second alarm fired while this one is showing (launchMode singleTop).
+     * Switch the display to the newest alarm; the previous alarm keeps its
+     * database row and notification, so it can still be handled from there.
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        displayedEventId = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
+        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
     }
 
     /**
@@ -169,7 +188,7 @@ class AlarmActivity : ComponentActivity() {
     private fun snoozeAlarm(eventId: Long) {
         stopSoundAndVibration()
 
-        val eventTitle: String = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
+        val eventTitle: String = displayedEventTitle.value
         val notificationManager: NotificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.cancel(eventId.toInt())
 
