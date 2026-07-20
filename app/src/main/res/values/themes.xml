@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.CalAlarm" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- DayNight + dynamic (DeviceDefault) so windowBackground tracks the system
+         light/dark mode and the Material You palette - the same source the Compose
+         UI uses (dynamicLight/DarkColorScheme). Every stand-in surface the OS draws
+         before Compose's first frame (cold-start splash, starting windows on any
+         transition) is painted from windowBackground; matching it to the real UI is
+         the only control an app has over those mandatory, system-drawn surfaces. -->
+    <style name="Theme.CalAlarm" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@style/AnimationCalAlarmNone</item>
     </style>
 
