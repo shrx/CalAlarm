@@ -53,7 +53,7 @@ class AlarmReceiver : BroadcastReceiver() {
             context,
             eventId.toInt(),
             alarmActivityIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         // Create PendingIntent for content intent (opens main activity when notification is tapped)
@@ -62,7 +62,7 @@ class AlarmReceiver : BroadcastReceiver() {
             context,
             eventId.toInt(),
             mainActivityIntent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val notificationManager: NotificationManager = context.getSystemService(NotificationManager::class.java)

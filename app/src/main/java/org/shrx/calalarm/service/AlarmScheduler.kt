@@ -33,11 +33,14 @@ class AlarmScheduler(private val context: Context) {
             putExtra(EXTRA_IS_SNOOZED, alarm.snoozeOffset > 0L)
         }
 
+        // Request code truncates eventId to Int; two events whose IDs share the same
+        // lower 32 bits would collide, but calendar provider IDs stay far below that.
+        // FLAG_UPDATE_CURRENT so a reschedule (e.g. snooze) refreshes the extras.
         val pendingIntent: PendingIntent = PendingIntent.getBroadcast(
             context,
             alarm.eventId.toInt(),
             intent,
-            PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         alarmManager.setExactAndAllowWhileIdle(
