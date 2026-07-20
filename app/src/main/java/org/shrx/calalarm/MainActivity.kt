@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -151,10 +152,10 @@ class MainActivity : ComponentActivity() {
         val calendarRepository: CalendarRepository = remember { calAlarmApp.calendarRepository }
         val eventSyncService: EventSyncService = remember { calAlarmApp.eventSyncService }
 
-        val alarmListViewModel: AlarmListViewModel = remember {
+        val alarmListViewModel: AlarmListViewModel = viewModel {
             AlarmListViewModel(alarmDao, eventSyncService, calendarRepository)
         }
-        val settingsViewModel: SettingsViewModel = remember {
+        val settingsViewModel: SettingsViewModel = viewModel {
             SettingsViewModel(calendarRepository, userPreferencesRepository)
         }
         // Ensure background monitoring starts once permissions are granted
