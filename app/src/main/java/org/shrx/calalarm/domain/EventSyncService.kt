@@ -12,6 +12,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.shrx.calalarm.data.calendar.CalendarObserver
 import org.shrx.calalarm.data.calendar.models.CalendarEvent
 import org.shrx.calalarm.data.local.AlarmDao
@@ -37,6 +39,7 @@ class EventSyncService(
     private val coroutineScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val alarmResyncChannel: Channel<Unit> = Channel(Channel.CONFLATED)
     private val monitoringStarted: AtomicBoolean = AtomicBoolean(false)
+    private val syncMutex: Mutex = Mutex()
 
     private val calendarObserver: CalendarObserver = CalendarObserver(context) {
         alarmResyncChannel.trySend(Unit)
@@ -46,8 +49,10 @@ class EventSyncService(
      * Synchronizes calendar events with scheduled alarms.
      *
      * Performs a full sync: schedules new alarms, cancels deleted/past alarms.
+     * Serialized with a mutex: SyncWorker and the monitoring consumer are
+     * independent entry points that must not interleave this read-modify-write.
      */
-    suspend fun syncAndScheduleAlarms() {
+    suspend fun syncAndScheduleAlarms() = syncMutex.withLock {
         // 1. Get upcoming events from selected calendars
         val events: List<CalendarEvent> = calendarRepository.getUpcomingEventsFromSelectedCalendars()
 
@@ -119,7 +124,7 @@ class EventSyncService(
      *
      * @param alarm The alarm to disable
      */
-    suspend fun disableAlarm(alarm: ScheduledAlarm) {
+    suspend fun disableAlarm(alarm: ScheduledAlarm) = syncMutex.withLock {
         // Cancel the alarm
         alarmScheduler.cancelAlarm(alarm)
 
