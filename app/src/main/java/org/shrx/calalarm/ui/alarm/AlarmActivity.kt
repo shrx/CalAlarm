@@ -103,7 +103,7 @@ class AlarmActivity : ComponentActivity() {
 
         // Extract intent data
         displayedEventId = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
-        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
+        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE) ?: "Untitled Event"
 
         // Initialize DAO
         alarmDao = AppDatabase.getInstance().alarmDao()
@@ -135,7 +135,7 @@ class AlarmActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         displayedEventId = intent.getLongExtra(EXTRA_EVENT_ID, 0L)
-        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE)!!
+        displayedEventTitle.value = intent.getStringExtra(EXTRA_EVENT_TITLE) ?: "Untitled Event"
     }
 
     /**
@@ -181,9 +181,9 @@ class AlarmActivity : ComponentActivity() {
     }
 
     /**
-     * Snoozes the alarm by stopping sound/vibration, calculating snooze offset (10 minutes from now), and rescheduling.
+     * Snoozes the alarm by stopping sound/vibration, removing the notification,
+     * calculating the snooze offset (user-configured delay from now), and rescheduling.
      * If alarm is deleted from database (race condition), it is recreated using intent data.
-     * Notification remains visible to show snoozed alarm.
      */
     private fun snoozeAlarm(eventId: Long) {
         stopSoundAndVibration()
