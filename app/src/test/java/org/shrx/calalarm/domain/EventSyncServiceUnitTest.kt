@@ -296,6 +296,47 @@ class EventSyncServiceUnitTest {
     }
 
     /**
+     * Verifies that an alarm whose original time already passed follows its event
+     * when the event is postponed to a future time, instead of being deleted.
+     */
+    @Test
+    fun syncAndScheduleAlarms_pastEventPostponedToFuture_reschedulesAlarm() = runBlocking {
+        val now: Long = System.currentTimeMillis()
+        val postponedTime: Long = now + 3_600_000
+        val postponedEvent: CalendarEvent = CalendarEvent(
+            id = 1L,
+            title = "Postponed Meeting",
+            startTime = postponedTime,
+            calendarId = 100L
+        )
+        coEvery { calendarRepository.getUpcomingEventsFromSelectedCalendars(any()) } returns listOf(postponedEvent)
+        coEvery { alarmDao.getAllAlarmEventIds() } returns listOf(1L)
+        coEvery { alarmDao.getDisabledEventIds() } returns emptyList()
+        val staleAlarm: ScheduledAlarm = ScheduledAlarm(
+            eventId = 1L,
+            eventTitle = "Postponed Meeting",
+            eventStartTime = now - 3_600_000, // original time already passed
+            calendarId = 100L,
+            snoozeOffset = 0L
+        )
+        coEvery { alarmDao.getAllAlarmsList() } returns listOf(staleAlarm)
+        coEvery { alarmDao.insertAlarm(any()) } just Runs
+        every { alarmScheduler.cancelAlarm(any()) } just Runs
+        every { alarmScheduler.scheduleAlarm(any()) } just Runs
+
+        eventSyncService.syncAndScheduleAlarms()
+
+        coVerify(exactly = 0) { alarmDao.deleteAlarm(any()) }
+        coVerify(exactly = 1) { alarmScheduler.cancelAlarm(staleAlarm) }
+        coVerify {
+            alarmDao.insertAlarm(match { it.eventId == 1L && it.eventStartTime == postponedTime })
+        }
+        coVerify {
+            alarmScheduler.scheduleAlarm(match { it.eventId == 1L && it.eventStartTime == postponedTime })
+        }
+    }
+
+    /**
      * Verifies that past alarms are cleaned up even if the event still exists.
      */
     @Test

@@ -86,24 +86,23 @@ class EventSyncService(
 
         alarmDao.getAllAlarmsList().forEach { alarm ->
             val matchingEvent: CalendarEvent? = eventMap[alarm.eventId]
-            val shouldDelete: Boolean = if (alarm.snoozeOffset > 0) {
+            if (alarm.snoozeOffset > 0) {
                 // Snoozed alarm - only delete if alarm time is past
-                alarm.eventStartTime + alarm.snoozeOffset < now
-            } else {
-                // Non-snoozed alarm - delete if event gone or alarm time past
-                alarm.eventId !in currentEventIds || alarm.eventStartTime < now
-            }
-
-            if (shouldDelete) {
+                if (alarm.eventStartTime + alarm.snoozeOffset < now) {
+                    alarmScheduler.cancelAlarm(alarm)
+                    alarmDao.deleteAlarm(alarm.eventId)
+                }
+            } else if (matchingEvent == null || matchingEvent.startTime < now) {
+                // Non-snoozed alarm - event gone or event starts in the past
                 alarmScheduler.cancelAlarm(alarm)
                 alarmDao.deleteAlarm(alarm.eventId)
-            } else if (matchingEvent != null && alarm.snoozeOffset == 0L && matchingEvent.startTime > now) {
-                if (matchingEvent.startTime != alarm.eventStartTime) {
-                    val updatedAlarm: ScheduledAlarm = alarm.copy(eventStartTime = matchingEvent.startTime)
-                    alarmScheduler.cancelAlarm(alarm)
-                    alarmDao.insertAlarm(updatedAlarm)
-                    alarmScheduler.scheduleAlarm(updatedAlarm)
-                }
+            } else if (matchingEvent.startTime != alarm.eventStartTime) {
+                // Event still exists with a future start time - follow it, even if the
+                // alarm's stored time already passed (event postponed after it started)
+                val updatedAlarm: ScheduledAlarm = alarm.copy(eventStartTime = matchingEvent.startTime)
+                alarmScheduler.cancelAlarm(alarm)
+                alarmDao.insertAlarm(updatedAlarm)
+                alarmScheduler.scheduleAlarm(updatedAlarm)
             }
         }
 
