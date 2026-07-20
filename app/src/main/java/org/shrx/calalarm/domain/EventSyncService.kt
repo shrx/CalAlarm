@@ -86,7 +86,6 @@ class EventSyncService(
         }
 
         // 5. Cancel and delete alarms for events that no longer exist or are in the past
-        val currentEventIds: Set<Long> = eventMap.keys
         val now: Long = System.currentTimeMillis()
 
         alarmDao.getAllAlarmsList().forEach { alarm ->
@@ -111,9 +110,12 @@ class EventSyncService(
             }
         }
 
-        // 6. Clean up disabled event IDs for events that no longer exist or are in the past
+        // 6. Clean up disabled event IDs for events that no longer exist or are in the past.
+        // Checked against all calendars, not just selected ones: deselecting a calendar
+        // must not purge the user's disabled choices for its events.
+        val stillRelevantDisabledIds: Set<Long> = calendarRepository.getExistingFutureEventIds(disabledEventIds)
         disabledEventIds.forEach { disabledEventId ->
-            if (disabledEventId !in currentEventIds) {
+            if (disabledEventId !in stillRelevantDisabledIds) {
                 alarmDao.deleteDisabledEventId(disabledEventId)
             }
         }

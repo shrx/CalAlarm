@@ -136,4 +136,43 @@ class CalendarProvider(private val context: Context) {
         }
         return events
     }
+
+    /**
+     * Returns which of the given event IDs still exist with a future start time,
+     * regardless of which calendar they belong to.
+     *
+     * @param eventIds Event IDs to check
+     * @param fromTime Events starting at or after this time count as future. Defaults to current time
+     * @return Subset of eventIds that exist, are not deleted, and start in the future
+     */
+    fun getExistingFutureEventIds(
+        eventIds: List<Long>,
+        fromTime: Long = System.currentTimeMillis()
+    ): Set<Long> {
+        if (eventIds.isEmpty()) return emptySet()
+
+        val existingIds: MutableSet<Long> = mutableSetOf()
+        val projection: Array<String> = arrayOf(CalendarContract.Events._ID)
+
+        val selection: String = """
+            ${CalendarContract.Events._ID} IN (${eventIds.joinToString(",")}) AND
+            ${CalendarContract.Events.DTSTART} >= ? AND
+            ${CalendarContract.Events.DELETED} != 1
+        """.trimIndent()
+
+        val selectionArgs: Array<String> = arrayOf(fromTime.toString())
+
+        context.contentResolver.query(
+            CalendarContract.Events.CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs,
+            null
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                existingIds.add(cursor.getLong(0))
+            }
+        }
+        return existingIds
+    }
 }

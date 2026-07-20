@@ -96,6 +96,19 @@ open class CalendarRepository(
     }
 
     /**
+     * Returns which of the given event IDs still exist with a future start time,
+     * in any calendar (selected or not).
+     *
+     * @param eventIds Event IDs to check
+     * @return Subset of eventIds that exist, are not deleted, and start in the future
+     */
+    open suspend fun getExistingFutureEventIds(eventIds: List<Long>): Set<Long> {
+        return withContext(Dispatchers.IO) {
+            calendarProvider.getExistingFutureEventIds(eventIds)
+        }
+    }
+
+    /**
      * Retrieves the list of calendar IDs selected by the user in settings.
      *
      * @return List of selected calendar IDs

@@ -456,6 +456,9 @@ class EventSyncServiceUnitTest {
         // And: Disabled events contains non-existent event 99L
         coEvery { alarmDao.getDisabledEventIds() } returns listOf(99L)
 
+        // And: Event 99L no longer exists in any calendar
+        coEvery { calendarRepository.getExistingFutureEventIds(any()) } returns emptySet()
+
         val alarm1: ScheduledAlarm = ScheduledAlarm(
             eventId = 1L,
             eventTitle = "Meeting",
@@ -472,6 +475,29 @@ class EventSyncServiceUnitTest {
 
         // Then: Stale disabled event ID 99L is deleted from blacklist
         coVerify(exactly = 1) { alarmDao.deleteDisabledEventId(99L) }
+    }
+
+    /**
+     * Verifies that disabled event IDs survive a sync when their events still exist
+     * with a future start time but are not in the selected calendars (e.g., the user
+     * deselected the calendar). Reselecting must not resurrect disabled alarms.
+     */
+    @Test
+    fun syncAndScheduleAlarms_disabledEventInDeselectedCalendar_keepsBlacklistEntry() = runBlocking {
+        // Given: Selected calendars return no events (calendar was deselected)
+        coEvery { calendarRepository.getUpcomingEventsFromSelectedCalendars(any()) } returns emptyList()
+        coEvery { alarmDao.getAllAlarmEventIds() } returns emptyList()
+        coEvery { alarmDao.getAllAlarmsList() } returns emptyList()
+
+        // And: Event 42L is disabled and still exists with a future start time
+        coEvery { alarmDao.getDisabledEventIds() } returns listOf(42L)
+        coEvery { calendarRepository.getExistingFutureEventIds(listOf(42L)) } returns setOf(42L)
+
+        // When: Sync is triggered
+        eventSyncService.syncAndScheduleAlarms()
+
+        // Then: The disabled event ID is kept
+        coVerify(exactly = 0) { alarmDao.deleteDisabledEventId(any()) }
     }
 
     /**
